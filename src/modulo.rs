@@ -3,7 +3,7 @@ use crate::gcd::modinv;
 use crate::traits::*;
 
 use std::fmt;
-use std::ops::{Add, Sub, Mul, Div};
+use std::ops::{ Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign };
 
 /// It's better to set modulo to be smaller than T::max_value().sqrt()
 #[derive(Clone, Copy)]
@@ -27,21 +27,16 @@ impl<T: Integer> ModInt<T> {
         Self { remainder, modulo }
     }
 
-    pub fn pow(&mut self, mut n: T) -> T {
-        let zero = T::zero();
-        let one = T::one();
-        if n < zero {
-            panic!("Pow error: {}", ModopError::NotNaturalNumber { n })
-        }
+    pub fn pow(&mut self, mut n: usize) -> T {
         let mut a = self.remainder;
-        let mut ans = one;
+        let mut ans = T::one();
         loop {
-            if n & one == one {
+            if n & 1 == 1 {
                 ans *= a;
                 ans %= self.modulo;
             }
-            n >>= one;
-            if n <= zero {
+            n >>= 1;
+            if n <= 0 {
                 break;
             }
             a = (a * a) % self.modulo;
@@ -49,12 +44,12 @@ impl<T: Integer> ModInt<T> {
         ans
     }
 
-    pub fn pow_into(&mut self, n: T) -> T {
+    pub fn pow_into(&mut self, n: usize) -> T {
         self.remainder = self.pow(n);
         self.remainder
     }
 
-    pub fn pow_inplace(&mut self, n: T) {
+    pub fn pow_inplace(&mut self, n: usize) {
         self.remainder = self.pow(n);
     }
 }
@@ -127,6 +122,12 @@ macro_rules! impl_signed {
             }
         }
 
+        impl SubAssign for ModInt<$t> {
+            fn sub_assign(&mut self, rhs: Self) {
+                *self = *self - rhs;
+            }
+        }
+
         impl ModInt<$t> {
             pub fn remainder_pos(&self) -> $t {
                 if self.remainder >= 0 {
@@ -184,6 +185,12 @@ macro_rules! impl_unsigned {
                 Self { remainder, modulo }
             }
         }
+
+        impl SubAssign for ModInt<$t> {
+            fn sub_assign(&mut self, rhs: Self) {
+                *self = *self - rhs;
+            }
+        }
     };
 }
 
@@ -200,3 +207,21 @@ impl_unsigned!(u32);
 impl_unsigned!(u64);
 impl_unsigned!(u128);
 impl_unsigned!(usize);
+
+impl<T: Integer> AddAssign for ModInt<T> {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = *self + rhs;
+    }
+}
+
+impl<T: Integer> MulAssign for ModInt<T> {
+    fn mul_assign(&mut self, rhs: Self) {
+        *self = *self * rhs;
+    }
+}
+
+impl<T: Integer> DivAssign for ModInt<T> {
+    fn div_assign(&mut self, rhs: Self) {
+        *self = *self / rhs;
+    }
+}

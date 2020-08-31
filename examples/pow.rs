@@ -1,5 +1,4 @@
-use modop::set_mod;
-use modop::modulo::*;
+use modop::*;
 
 fn main() {
     set_mod!(1000000007, isize);

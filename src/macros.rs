@@ -6,5 +6,11 @@ macro_rules! set_mod {
                 ModInt::<$t>::new($v, $m)
             };
         }
+
+        macro_rules! modgen {
+            () => {
+                ModGen::<$t>::new($m)
+            };
+        }
     };
 }
